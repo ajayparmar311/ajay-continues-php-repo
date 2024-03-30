@@ -13,6 +13,22 @@ jobs:
     steps:
     - name: checkout the codebase
       uses: actions/checkout@v3
-      
-    - name: Build the Docker image
-      run: docker build . -t ajaycodehelper/ajay_php_container:$(date +%s)
+
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to ECR
+      run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/m5j6t1v5
+
+
+
+    - name: Build,tag and push the Docker image
+      run: |
+        docker build . -t ajaycodehelper/ajay-continues-php-image
+        docker tag ajaycodehelper/ajay-continues-php-image:latest public.ecr.aws/m5j6t1v5/ajaycodehelper/ajay-continues-php-image:latest
+        docker push public.ecr.aws/m5j6t1v5/ajaycodehelper/ajay-continues-php-image:latest
+
